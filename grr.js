@@ -4,12 +4,12 @@
 
     (function (grr) {
 
-        var Event = function (element, type) {
+        var Ev = function (element, type) {
             this.element = element;
             this.type = type;
         };
 
-        Event.prototype = {
+        Ev.prototype = {
             add: function (callback) {
                 this.callback = callback;
                 this.element.addEventListener(this.type, this.callback, false);
@@ -23,7 +23,7 @@
         var TransitionEnd = function (element) {
             this.element = element;
             this.transitionEnd = this.whichTransitionEnd();
-            this.event = new Event(this.element, this.transitionEnd);
+            this.event = new Ev(this.element, this.transitionEnd);
         };
 
         TransitionEnd.prototype = {
@@ -88,9 +88,7 @@
                 throw 'You need to pass an element as parameter!';
             }
 
-            var element = el[0] || el;
-
-            return Cache.insert(element);
+            return Cache.insert(el[0] || el);
         };
     }).call(this, grr);
 
@@ -103,8 +101,7 @@
             }
         };
 
-        var toggleClass = function (element, className, add, onEnd) {
-            add = add !== false;
+        var toggleClass = function (element, className, onEnd) {
             if (className) {
                 if (onEnd) {
                     if (document.addEventListener) {
@@ -116,11 +113,7 @@
                         onEnd.call();
                     }
                 }
-                if (add && element.className.indexOf(className) == -1) {
-                    element.className = element.className + (element.className ? ' ' : '') + className;
-                } else if (!add) {
-                    element.className = element.className.replace(new RegExp('\\' + className + '\\b'), '').replace(/\s{2,}/, ' ');
-                }
+                element.className = element.className.indexOf(className) > -1 ? element.className.replace(new RegExp('\\' + className + '\\b'), '').replace(/\s{2,}/, ' ') : element.className + (element.className ? ' ' : '') + className;
             }
         };
 
@@ -133,8 +126,12 @@
         };
 
         var remove = function (item) {
-            toggleClass(item, 'grr-item-in', false);
-            toggleClass(item, 'grr-item-out', true, function () {
+            var timeout = item.getAttribute('data-timeout');
+            if (timeout) {
+                clearTimeout(item.getAttribute('data-timeout'));
+            }
+            toggleClass(item, 'grr-item-in');
+            toggleClass(item, 'grr-item-out', function () {
                 api.container.removeChild(item);
             });
         };
@@ -145,7 +142,7 @@
             toggleClass(item, 'grr-item');
             item.appendChild(textChild);
             item.onclick = function () {
-                remove(this)
+                remove(this);
             };
             return item;
         };
@@ -161,9 +158,9 @@
             var item = create({msg: msg});
             add(item);
             if (sticky !== true) {
-                setTimeout(function () {
+                item.setAttribute('data-timeout', setTimeout(function () {
                     remove(item);
-                }, api.options.life);
+                }, api.options.life));
             }
             return item;
         };
@@ -175,4 +172,5 @@
         window.grr = api;
 
     }).call(this, window, grr);
+
 }).call(this, window);

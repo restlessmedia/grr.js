@@ -1,35 +1,46 @@
 <html>
 <head>
-	<script type="text/javascript" src="grr.js"></script>
-	<style type="text/css">
-		.grr-container{}
-		
-		.grr-item{
-			border:1px solid #ccc;
-			padding:6px;
-			width:100px;
-			opacity:0;
-			-webkit-transform: scale(0.95) translate3d(0,100%,0);
-			-webkit-transition: -webkit-transform 400ms ease, opacity 400ms ease;
-		}
-		
-		.grr-item-in{
-			opacity: 1.0;
-			-webkit-transform: scale(1.0) translate3d(0,0,0);
-		}
-		.grr-item-out{
-			opacity: 0.0;
-			-webkit-transform: scale(1) translate3d(0,0,0);
-		}
-	</style>
+    <script type="text/javascript" src="grr.js"></script>
+    <style type="text/css">
+        body {
+            font-family: arial;
+        }
+
+        .grr-container {
+        }
+
+        .grr-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 100px;
+            opacity: 0;
+            -webkit-transform: scale(0.8) translate3d(0, 100%, 0);
+            -webkit-transition: -webkit-transform 300ms ease, opacity 300ms ease;
+            -webkit-border-radius: 4px;
+            background-color: #e6e6e6;
+            min-width: 170px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .grr-item-in {
+            opacity: 1.0;
+            -webkit-transform: scale(1.0) translate3d(0, 0, 0);
+        }
+
+        .grr-item-out {
+            opacity: 0.0;
+            -webkit-transform: scale(0.8) translate3d(0, 0, 0);
+        }
+    </style>
 </head>
 <body>
-<input type="text" id="msg" />
+<input type="text" id="msg"/>
 <button onclick="window.grr.raise(document.getElementById('msg').value)">add</button>
 <script type="text/javascript">
-	window.grr.attach(document.body);
-	window.grr.raise('sticky note', true);
-	window.grr.raise('note');
+    window.grr.attach(document.body);
+    window.grr.raise('sticky note', true);
+    window.grr.raise('note');
 </script>
 </body>
 </html>
