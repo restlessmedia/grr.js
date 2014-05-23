@@ -10,6 +10,8 @@
     var toggleClass = function (element, className, onEnd) {
         if (className) {
             if (onEnd) {
+                // feature detection for the transitionEnd libraru.
+                // should also imply we have css transitions in the browser
                 if (document.addEventListener) {
                     transitionEnd(element).bind(function () {
                         transitionEnd(element).unbind();
