@@ -1,176 +1,80 @@
 (function (window) {
 
-    var grr = {};
+    var api = {
+        container: document.createElement('div'),
+        options: {
+            life: 4000
+        }
+    };
 
-    (function (grr) {
-
-        var Ev = function (element, type) {
-            this.element = element;
-            this.type = type;
-        };
-
-        Ev.prototype = {
-            add: function (callback) {
-                this.callback = callback;
-                this.element.addEventListener(this.type, this.callback, false);
-            },
-
-            remove: function () {
-                this.element.removeEventListener(this.type, this.callback, false);
-            }
-        };
-
-        var TransitionEnd = function (element) {
-            this.element = element;
-            this.transitionEnd = this.whichTransitionEnd();
-            this.event = new Ev(this.element, this.transitionEnd);
-        };
-
-        TransitionEnd.prototype = {
-            whichTransitionEnd: function () {
-                var transitions = {
-                    'WebkitTransition': 'webkitTransitionEnd',
-                    'MozTransition': 'transitionend',
-                    'OTransition': 'oTransitionEnd otransitionend',
-                    'transition': 'transitionend'
-                };
-
-                for (var t in transitions) {
-                    if (this.element.style[t] !== undefined) {
-                        return transitions[t];
-                    }
-                }
-            },
-
-            bind: function (callback) {
-                this.event.add(callback);
-            },
-
-            unbind: function () {
-                this.event.remove();
-            }
-        };
-
-        var Cache = {
-            list: [],
-
-            getPosition: function (element) {
-                if (Array.prototype.indexOf) {
-                    return this.list.indexOf(element);
-                }
-
-                for (var i = 0, size = this.list.length; i < size; i++) {
-                    if (this.list[i] === element) {
-                        return i;
-                    }
-                }
-
-                return -1;
-            },
-
-            insert: function (element) {
-                var positonElement = this.getPosition(element);
-                var isCached = positonElement !== -1;
-
-                if (!isCached) {
-                    this.list.push(element);
-                    this.list.push(new TransitionEnd(element));
-
-                    positonElement = this.getPosition(element);
-                }
-
-                return this.list[positonElement + 1];
-            }
-        };
-
-        grr.transitionEnd = function (el) {
-            if (!el) {
-                throw 'You need to pass an element as parameter!';
-            }
-
-            return Cache.insert(el[0] || el);
-        };
-    }).call(this, grr);
-
-    (function (window, grr) {
-
-        var api = {
-            container: document.createElement('div'),
-            options: {
-                life: 4000
-            }
-        };
-
-        var toggleClass = function (element, className, onEnd) {
-            if (className) {
-                if (onEnd) {
-                    if (document.addEventListener) {
-                        grr.transitionEnd(element).bind(function () {
-                            grr.transitionEnd(element).unbind();
-                            onEnd.call();
-                        });
-                    } else {
+    var toggleClass = function (element, className, onEnd) {
+        if (className) {
+            if (onEnd) {
+                if (document.addEventListener) {
+                    transitionEnd(element).bind(function () {
+                        transitionEnd(element).unbind();
                         onEnd.call();
-                    }
+                    });
+                } else {
+                    onEnd.call();
                 }
-                element.className = element.className.indexOf(className) > -1 ? element.className.replace(new RegExp('\\' + className + '\\b'), '').replace(/\s{2,}/, ' ') : element.className + (element.className ? ' ' : '') + className;
             }
-        };
+            element.className = element.className.indexOf(className) > -1 ? element.className.replace(new RegExp('\\' + className + '\\b'), '').replace(/\s{2,}/, ' ') : element.className + (element.className ? ' ' : '') + className;
+        }
+    };
 
-        var attach = function (parent) {
-            api.container.style.position = 'absolute';
-            api.container.style.top = '0';
-            api.container.style.right = '0';
-            toggleClass(api.container, 'grr-container');
-            parent.appendChild(api.container);
-        };
+    var attach = function (parent) {
+        api.container.style.position = 'absolute';
+        api.container.style.top = '0';
+        api.container.style.right = '0';
+        toggleClass(api.container, 'grr-container');
+        parent.appendChild(api.container);
+    };
 
-        var remove = function (item) {
-            var timeout = item.getAttribute('data-timeout');
-            if (timeout) {
-                clearTimeout(item.getAttribute('data-timeout'));
-            }
+    var remove = function (item) {
+        var timeout = item.getAttribute('data-timeout');
+        if (timeout) {
+            clearTimeout(item.getAttribute('data-timeout'));
+        }
+        toggleClass(item, 'grr-item-in');
+        toggleClass(item, 'grr-item-out', function () {
+            api.container.removeChild(item);
+        });
+    };
+
+    var create = function (options) {
+        var item = document.createElement('div');
+        var textChild = document.createTextNode(options.msg);
+        toggleClass(item, 'grr-item');
+        item.appendChild(textChild);
+        item.onclick = function () {
+            remove(this);
+        };
+        return item;
+    };
+
+    var add = function (item) {
+        api.container.appendChild(item);
+        setTimeout(function () {
             toggleClass(item, 'grr-item-in');
-            toggleClass(item, 'grr-item-out', function () {
-                api.container.removeChild(item);
-            });
-        };
+        }, 50)
+    };
 
-        var create = function (options) {
-            var item = document.createElement('div');
-            var textChild = document.createTextNode(options.msg);
-            toggleClass(item, 'grr-item');
-            item.appendChild(textChild);
-            item.onclick = function () {
-                remove(this);
-            };
-            return item;
-        };
+    var raise = function (msg, sticky) {
+        var item = create({msg: msg});
+        add(item);
+        if (sticky !== true) {
+            item.setAttribute('data-timeout', setTimeout(function () {
+                remove(item);
+            }, api.options.life));
+        }
+        return item;
+    };
 
-        var add = function (item) {
-            api.container.appendChild(item);
-            setTimeout(function () {
-                toggleClass(item, 'grr-item-in');
-            }, 50)
-        };
+    api.attach = attach;
+    api.raise = raise;
+    api.remove = remove;
 
-        var raise = function (msg, sticky) {
-            var item = create({msg: msg});
-            add(item);
-            if (sticky !== true) {
-                item.setAttribute('data-timeout', setTimeout(function () {
-                    remove(item);
-                }, api.options.life));
-            }
-            return item;
-        };
-
-        api.attach = attach;
-        api.raise = raise;
-        api.remove = remove;
-
-        window.grr = api;
-
-    }).call(this, window, grr);
+    window.grr = api;
 
 }).call(this, window);
