@@ -96,7 +96,6 @@
 
     (function (window, grr) {
 
-        var listeners = {};
         var api = {
             container: document.createElement('div'),
             options: {
@@ -125,22 +124,6 @@
             }
         };
 
-        var announce = function (type, args) {
-            args = args || [];
-            args.unshift(type);
-            if (listeners[type]) {
-                listeners[type].apply(api.container, args);
-            }
-        };
-
-        var addListener = function (type, fn) {
-            listeners[type] = fn;
-        };
-
-        var removeListener = function (type) {
-            delete listeners[type];
-        };
-
         var attach = function (parent) {
             api.container.style.position = 'absolute';
             api.container.style.top = '0';
@@ -153,7 +136,6 @@
             toggleClass(item, 'grr-item-in', false);
             toggleClass(item, 'grr-item-out', true, function () {
                 api.container.removeChild(item);
-                announce('removed', [item]);
             });
         };
 
@@ -169,7 +151,6 @@
         };
 
         var add = function (item) {
-            announce('added', [item]);
             api.container.appendChild(item);
             setTimeout(function () {
                 toggleClass(item, 'grr-item-in');
@@ -190,8 +171,6 @@
         api.attach = attach;
         api.raise = raise;
         api.remove = remove;
-        api.addListener = addListener;
-        api.removeListener = removeListener;
 
         window.grr = api;
 
