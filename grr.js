@@ -36,7 +36,7 @@
     var remove = function (item) {
         var timeout = item.getAttribute('data-timeout');
         if (timeout) {
-            clearTimeout(item.getAttribute('data-timeout'));
+            clearTimeout(timeout);
         }
         toggleClass(item, 'grr-item-in');
         toggleClass(item, 'grr-item-out', function () {
